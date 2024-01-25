@@ -1,0 +1,48 @@
+FIXME: Exemplo de estrutura de uma base de registro de clientes
+Customer customer[] = {
+    { 
+    // customer 1
+        "", // nameCompleto
+        "", // email
+        "", // cpf
+        "", // phone
+        { 
+        // adress
+            "", // street
+            "", // number
+            "", // neighborhood
+            "", // city
+            "", // state
+            "" // cep
+        }, 
+        { 
+        // dateRegister
+            0, // day
+            0, // month
+            0 // year
+        }
+    }
+};
+
+TODO: Criar uma função para cadastrar um novo cliente
+1. Solicitar o nome completo do cliente
+2. Solicitar o email do cliente
+3. Solicitar o cpf do cliente
+4. Solicitar o telefone do cliente
+5. Solicitar o endereço do cliente
+    5.1 Solicitar a rua do cliente
+    5.2 Solicitar o número da casa do cliente
+    5.3 Solicitar o bairro do cliente
+    5.4 Solicitar a cidade do cliente
+    5.5 Solicitar o estado do cliente
+    5.6 Solicitar o cep do cliente
+6. Inserir uma data de cadastro do cliente
+
+TODO: Criar uma função para listar todos os clientes cadastrados
+
+TODO: Criar uma função para buscar um cliente pelo cpf
+
+Expressões regulares:
+// ^[a-z0-9._]+@[a-z]+\.[a-z]+\.[a-z]{2,}$ //.com.br
+// ^[a-z0-9._]+@[a-z]+\.[a-z]{2,}$ //.com
+*sudo apt-get install libpcre3-dev*
