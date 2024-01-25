@@ -41,6 +41,15 @@ void setName(Customer *customer);
 void setEmail(Customer *customer);
 void setCpf(Customer *customer);
 void setPhone(Customer *customer);
+void setAdress(Customer *customer);
+
+Adress *createAdress();
+void setCep(Adress *adress);
+void setStreet(Adress *adress);
+void setNumber(Adress *adress);
+void setNeighborhood(Adress *adress);
+void setCity(Adress *adress);
+void setState(Adress *adress);
 
 char *formatCpf(char *cpf);
 char *formatPhone(char *phone);
@@ -62,7 +71,7 @@ void setName(Customer *customer) {
     printf("Digite o nome do cliente: ");
     scanf("%[^\n]", name);
 
-    if(!isValidRegex(name, patternName) || !isValidInput(name)) {
+    if(!isValidRegex(name, patternName) || !isValidLengthInput(name)) {
         printf("O nome do cliente deve ter no mínimo %d caracteres e no máximo %d caracteres.\n", MIN_LENGTH, MAX_LENGTH);
         setName(customer); // Recursive function
     } else {
@@ -175,4 +184,27 @@ Customer *createCustomer() {
     //TODO: Adicionar data de cadastro e endereço 
 
     return customer;
+}
+
+void setCep(Adress *adress) {}
+
+void setStreet(Adress *adress) {}
+
+void setNumber(Adress *adress) {}
+
+void setNeighborhood(Adress *adress) {}
+
+void setCity(Adress *adress) {}
+
+void setState(Adress *adress) {}
+
+Adress *createAdress() {
+    Adress *adress = (Adress *) malloc(sizeof(Adress));
+
+    if(adress == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return adress;
 }
