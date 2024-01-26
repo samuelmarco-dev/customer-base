@@ -5,10 +5,13 @@
 #include <ctype.h>
 #include <curl/curl.h>
 #include <json-c/json.h>
+#include <memory.h>
+#include <malloc.h>
 #include <locale.h>
 //#include <time.h>
 
 #define MAX_LENGTH 50
+#define LENGTH_STATE 2
 #define MIN_LENGTH 5
 #define LENGTH_CEP 8
 #define MAX_CEP 10
@@ -16,14 +19,14 @@
 #define LENGTH_CPF 15
 #define LENGTH_PHONE 16  
 
-// typedef struct {
-//     char street[MAX_LENGTH];
-//     //char number[MAX_LENGTH];
-//     char neighborhood[MAX_LENGTH];
-//     char city[MAX_LENGTH];
-//     char state[MAX_LENGTH];
-//     char cep[MAX_CEP];
-// } Address;
+typedef struct {
+    char street[MAX_LENGTH];
+    char number[MAX_LENGTH];
+    char neighborhood[MAX_LENGTH];
+    char city[MAX_LENGTH];
+    char state[MAX_LENGTH];
+    char cep[MAX_CEP];
+} Address;
 
 // typedef struct {
 //     int day;
@@ -36,14 +39,14 @@ typedef struct {
     char email[MAX_LENGTH];
     char cpf[LENGTH_CPF];
     char phone[LENGTH_PHONE];
-    // Address address;
+    Address address;
     // Date dateRegister;
 } Customer;
 
-// struct MemoryStruct {
-//     char *memory;
-//     size_t size;
-// };
+struct MemoryStruct {
+    char *memory;
+    size_t size;
+};
 
 Customer *createCustomer();
 void setName(Customer *customer);
@@ -51,17 +54,21 @@ void setEmail(Customer *customer);
 void setCpf(Customer *customer);
 void setPhone(Customer *customer);
 
-// Address *createAddress();
-// static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
-// int searchByCEP(const char *cep, Address *address);
-// int isValidCep(const char *cep);
-
 char *formatCpf(char *cpf);
 char *formatPhone(char *phone);
 
 int isValidRegex(const char *input, const char *pattern);
 int isValidLengthInput(const char *input);
 int isValidCpfAndPhone(const char *input);
+
+Address *createAddress();
+void setCep(Address *adress);
+void setNumber(Address *address);
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
+int searchByCep(const char *cep, Address *address);
+
+int isValidCep(const char *cep);
+int isValidNumber(const char *number);
 int isNumbers(const char *input);
 
 int main() {
@@ -72,7 +79,6 @@ int main() {
     printf("Cliente cadastrado com sucesso!\n");
 
     free(dataBase[0]);
-    
     return 0;
 }
 
@@ -119,7 +125,7 @@ void setCpf(Customer *customer) {
 
     do {
         printf("Digite o CPF do cliente (Apenas números): ");
-        scanf("%11[^\n]", cpf);
+        scanf("%[^\n]", cpf);
         getchar();
 
         if(!isValidCpfAndPhone(cpf))
@@ -137,7 +143,7 @@ void setPhone(Customer *customer) {
 
     do{
         printf("Digite o telefone do cliente com DDD (Apenas números): ");
-        scanf("%11[^\n]", phone);
+        scanf("%[^\n]", phone);
         getchar();
 
         if(!isValidCpfAndPhone(phone)) 
@@ -219,131 +225,166 @@ Customer *createCustomer() {
     //setCpf(customer);
     //setPhone(customer);
 
-    // Address *address = createAddress();
-    // customer->address = *address;
+    Address *address = createAddress();
+    customer->address = *address;
 
     return customer;
 }
 
-// void setCep(Address *adress) {
-//     char cep[MAX_CEP];
+void setCep(Address *adress) {
+    char cep[MAX_CEP];
 
-//     printf("Digite o CEP do cliente (Apenas números): ");
-//     scanf("%[^\n]", cep);
+    do{
+        printf("Digite o CEP do cliente (Apenas números): ");
+        scanf("%[^\n]", cep);
+        getchar();
 
-//     if(!isValidCep(cep)) {
-//         printf("O CEP deve ter %d caracteres.\n", LENGTH_CEP);
-//         setCep(adress); // Recursive function
-//     } else {
-//         strcpy(adress->cep, cep);
-//         getchar();
-//     }
-// }
+        if(!isValidCep(cep))
+            printf("O CEP deve ter %d caracteres.\n", LENGTH_CEP);
+        else if(!isNumbers(cep))
+            printf("O CEP deve conter apenas números.\n");
+        else break;
+    } while(!(isValidCep(cep) && isNumbers(cep)));
 
-// int isValidCep(const char *cep) {
-//     return (strlen(cep) == LENGTH_CEP) ? 1 : 0;
-// }
+    strcpy(adress->cep, cep);
+}
 
-// static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-//     size_t realsize = size *nmemb;
-//     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+void setNumber(Address *address) {
+    char number[MIN_LENGTH];
 
-//     mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-//     if (mem->memory == NULL) {
-//         printf("Erro ao alocar memória.\n");
-//         exit(EXIT_FAILURE);
-//     }
+    do {
+        printf("Digite o número da residência: ");
+        scanf("%[^\n]", number);
+        getchar();
 
-//     memcpy(&(mem->memory[mem->size]), contents, realsize);
-//     mem->size += realsize;
-//     mem->memory[mem->size] = 0;
+        if(!isValidNumber(number))
+            printf("O número deve ter no máximo %d caracteres.\n", MIN_LENGTH);
+        else if(!isNumbers(number))
+            printf("Deve conter apenas números.\n");
+        else break;
+    } while(!(isValidNumber(number) && isNumbers(number)));
 
-//     return realsize;
-// }
+    strcpy(address->number, number);
+}
 
-// int searchByCEP(const char *cep, Address *address) {
-//     CURL *curl;
-//     CURLcode res;
+int isValidCep(const char *cep) {
+    return (strlen(cep) == LENGTH_CEP) ? 1 : 0;
+}
 
-//     struct MemoryStruct chunk;
+int isValidNumber(const char *number) {
+    return (strlen(number) > MIN_LENGTH) ? 0 : 1;
+}
 
-//     chunk.memory = malloc(sizeof(char));
-//     chunk.size = 0;
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size *nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
-//     curl_global_init(CURL_GLOBAL_DEFAULT);
-//     curl = curl_easy_init();
+    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+    if (mem->memory == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(EXIT_FAILURE);
+    }
 
-//     if(curl) {
-//         char url[MAX_LENGTH];
-//         sprintf(url, "https://brasilaberto.com/api/v1/zipcode/%s", cep);
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
 
-//         curl_easy_setopt(curl, CURLOPT_URL, url);
-//         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-//         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+    return realsize;
+}
+
+int searchByCep(const char *cep, Address *address) {
+    CURL *curl;
+    CURLcode res;
+
+    struct MemoryStruct chunk = {0};
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    if(curl) {
+        char url[MAX_LENGTH];
+        snprintf(url, sizeof(url), "https://brasilaberto.com/api/v1/zipcode/%s", cep);
+
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
         
-//         res = curl_easy_perform(curl);
+        res = curl_easy_perform(curl);
 
-//         if(res != CURLE_OK) {
-//             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-//             return -1;
-//         }
+        if(res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            return -1;
+        }
         
-//         json_object *json = json_tokener_parse(chunk.memory);
-//         if(json == NULL) {
-//             fprintf(stderr, "Erro ao analisar JSON\n");
-//             free(chunk.memory);
-//             curl_easy_cleanup(curl);
-//             return -1;
-//         }
+        json_object *json = json_tokener_parse(chunk.memory);
+        if(json == NULL) {
+            fprintf(stderr, "Erro ao analisar JSON\n");
+            free(chunk.memory);
+            curl_easy_cleanup(curl);
+            
+            return -1;
+        }
 
-//         json_object *response;
-//         if(json_object_object_get_ex(json, "response", &response)) {
-//             json_object *street, *neighborhood, *city, *state;    
+        json_object *response;
+        if(json_object_object_get_ex(json, "result", &response)) {
+            json_object *error, *street, *neighborhood, *city, *state;
 
-//             if(json_object_object_get_ex(response, "street", &street)) {
-//                 strcpy(address->street, json_object_get_string(street));
-//                 address->street[strlen(address->street)] = '\0';
-//             }
-//             if(json_object_object_get_ex(response, "district", &neighborhood)) {
-//                 strcpy(address->neighborhood, json_object_get_string(neighborhood));
-//                 address->neighborhood[strlen(address->neighborhood)] = '\0';
-//             }
-//             if(json_object_object_get_ex(response, "city", &city)) {
-//                 strcpy(address->city, json_object_get_string(city));
-//                 address->city[strlen(address->city)] = '\0';
-//             }
-//             if(json_object_object_get_ex(response, "state", &state)) {
-//                 strcpy(address->state, json_object_get_string(state));
-//                 address->state[strlen(address->state)] = '\0';
-//             } 
-//         }
+            if(json_object_object_get_ex(response, "error", &error)) {
+                fprintf(stderr, "Erro: %s\n", json_object_get_string(error));
+                curl_easy_cleanup(curl);
 
-//         json_object_put(json);
-//         free(chunk.memory);
+                return -1;
+            } else {
+                if(json_object_object_get_ex(response, "street", &street)) {
+                    strcpy(address->street, json_object_get_string(street));
+                    address->street[strlen(address->street)] = '\0';
+                }
+                if(json_object_object_get_ex(response, "district", &neighborhood)) {
+                    strcpy(address->neighborhood, json_object_get_string(neighborhood));
+                    address->neighborhood[strlen(address->neighborhood)] = '\0';
+                }
+                if(json_object_object_get_ex(response, "city", &city)) {
+                    strcpy(address->city, json_object_get_string(city));
+                    address->city[strlen(address->city)] = '\0';
+                }
+                if(json_object_object_get_ex(response, "state", &state)) {
+                    strcpy(address->state, json_object_get_string(state));
+                    address->state[strlen(address->state)] = '\0';
+                } 
+            }
+        }
 
-//         curl_easy_cleanup(curl);
-//         curl_global_cleanup();
-//         return 0; 
-//     } else {
-//         fprintf(stderr, "Erro ao inicializar o CURL\n");
-//         return -1;
-//     }
-// }
+        json_object_put(json);
+        free(chunk.memory);
 
-// Address *createAddress() {
-//     Address *address = (Address *) malloc(sizeof(Address));
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
 
-//     if(address == NULL) {
-//         printf("Erro ao alocar memória.\n");
-//         exit(EXIT_FAILURE);
-//     }
+        return 0; 
+    } else {
+        fprintf(stderr, "Erro ao inicializar o CURL\n");
 
-//     setCep(address);
-//     int result = searchByCEP(address->cep, address);
+        free(chunk.memory);
+        return -1;
+    }
+}
 
-//     if(result == -1) {
-//         printf("Erro ao buscar o CEP.\n");
-//     }
+Address *createAddress() {
+    Address *address = (Address *) malloc(sizeof(Address));
 
-//     return address;
-// }
+    if(address == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    do {
+        setCep(address);
+
+        if(searchByCep(address->cep, address) == -1) {
+            printf("Erro ao buscar o CEP. Tente novamente!\n");
+        } else break;
+    } while(searchByCep(address->cep, address));
+
+    setNumber(address);
+    return address;
+}
