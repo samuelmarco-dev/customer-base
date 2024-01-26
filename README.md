@@ -14,3 +14,22 @@ A customer registration project is a practical way to understand how to store an
 In this project, you will create a simple system for registering customers, where you can add, view, edit and delete customer information.
 
 The goal is to practice data manipulation and the use of control structures.
+
+## Linux environment instructions
+1. Install gcc compiler
+2. Install libcurl4-openssl-dev and libjson-c-dev
+3. Clone the repository
+4. Enter the directory
+5. Compile the main.c file
+6. Run the main file
+
+```bash
+sudo apt install gcc
+sudo apt-get install libcurl4-openssl-dev libjson-c-dev
+sudo apt install 
+git clone
+cd customer-base
+cd src
+gcc -o main main.c -lcurl -ljson-c
+./main
+```
