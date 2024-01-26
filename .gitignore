@@ -53,3 +53,4 @@ dkms.conf
 
 # Local documents
 .vscode
+.idea
