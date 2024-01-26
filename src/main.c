@@ -8,7 +8,7 @@
 #include <memory.h>
 #include <malloc.h>
 #include <locale.h>
-//#include <time.h>
+#include <time.h>
 
 #define MAX_LENGTH 50
 #define LENGTH_STATE 2
@@ -18,6 +18,10 @@
 #define LENGTH_INPUT 11
 #define LENGTH_CPF 15
 #define LENGTH_PHONE 16  
+#define DIFF_DAY 1
+#define YEAR_MIN 1900
+
+#define API_URL "https://brasilaberto.com/api/v1/zipcode/%s"
 
 typedef struct {
     char street[MAX_LENGTH];
@@ -28,11 +32,11 @@ typedef struct {
     char cep[MAX_CEP];
 } Address;
 
-// typedef struct {
-//     int day;
-//     int month;
-//     int year;
-// } Date;
+typedef struct {
+    int day;
+    int month;
+    int year;
+} Date;
 
 typedef struct {
     char name[MAX_LENGTH];
@@ -40,7 +44,7 @@ typedef struct {
     char cpf[LENGTH_CPF];
     char phone[LENGTH_PHONE];
     Address address;
-    // Date dateRegister;
+    Date dateRegister;
 } Customer;
 
 struct MemoryStruct {
@@ -71,14 +75,21 @@ int isValidCep(const char *cep);
 int isValidNumber(const char *number);
 int isNumbers(const char *input);
 
+Date *createDate();
+void getCurrentDate(Date *currentDate);
+
+void showDataCustomer(Customer *customer);
+
 int main() {
     setlocale(LC_ALL, "Portuguese");
     Customer *dataBase[1];
     
     dataBase[0] = createCustomer();
     printf("Cliente cadastrado com sucesso!\n");
-
+    showDataCustomer(dataBase[0]);
     free(dataBase[0]);
+    dataBase[0] = NULL;
+
     return 0;
 }
 
@@ -134,8 +145,10 @@ void setCpf(Customer *customer) {
             printf("O CPF deve conter apenas números.\n");
         else break;
     } while(!(isValidCpfAndPhone(cpf) && isNumbers(cpf)));
-    
-    strcpy(customer->cpf, formatCpf(cpf));
+
+    char *cpfFormatted = formatCpf(cpf);
+    strcpy(customer->cpf, cpfFormatted);
+    free(cpfFormatted);
 }
 
 void setPhone(Customer *customer) {
@@ -153,7 +166,9 @@ void setPhone(Customer *customer) {
         else break;
     } while(!(isValidCpfAndPhone(phone) && isNumbers(phone)));
 
-    strcpy(customer->phone, formatPhone(phone));
+    char *phoneFormatted = formatPhone(phone);
+    strcpy(customer->phone, phoneFormatted);
+    free(phoneFormatted);
 }
 
 char *formatCpf(char *cpf) {
@@ -213,20 +228,26 @@ int isNumbers(const char *input) {
 }
 
 Customer *createCustomer() {
-    Customer *customer = (Customer *) malloc(sizeof(Customer));
+    Customer *customer = (Customer *) calloc(1, sizeof(Customer));
 
     if(customer == NULL) {
         fprintf(stderr, "Erro: Alocação de memória!\n");
         exit(EXIT_FAILURE);
     }
     
-    // setName(customer);
-    // setEmail(customer);
-    //setCpf(customer);
-    //setPhone(customer);
+    setName(customer);
+    setEmail(customer);
+    setCpf(customer);
+    setPhone(customer);
 
     Address *address = createAddress();
     customer->address = *address;
+
+    Date *dateRegister = createDate();
+    customer->dateRegister = *dateRegister;
+
+    free(address);
+    free(dateRegister);
 
     return customer;
 }
@@ -272,7 +293,8 @@ int isValidCep(const char *cep) {
 }
 
 int isValidNumber(const char *number) {
-    return (strlen(number) > MIN_LENGTH) ? 0 : 1;
+    int num = atoi(number);
+    return (strlen(number) > MIN_LENGTH && num <= 0) ? 0 : 1;
 }
 
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -281,7 +303,7 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 
     mem->memory = realloc(mem->memory, mem->size + realsize + 1);
     if (mem->memory == NULL) {
-        printf("Erro ao alocar memória.\n");
+        fprintf(stderr, "Erro ao alocar memória.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -303,7 +325,7 @@ int searchByCep(const char *cep, Address *address) {
 
     if(curl) {
         char url[MAX_LENGTH];
-        snprintf(url, sizeof(url), "https://brasilaberto.com/api/v1/zipcode/%s", cep);
+        snprintf(url, sizeof(url), API_URL, cep);
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
@@ -353,7 +375,6 @@ int searchByCep(const char *cep, Address *address) {
                 } 
             }
         }
-
         json_object_put(json);
         free(chunk.memory);
 
@@ -383,8 +404,63 @@ Address *createAddress() {
         if(searchByCep(address->cep, address) == -1) {
             printf("Erro ao buscar o CEP. Tente novamente!\n");
         } else break;
-    } while(searchByCep(address->cep, address));
+    } while(searchByCep(address->cep, address) != 0);
 
     setNumber(address);
     return address;
+}
+
+void getCurrentDate(Date *currentDate) {
+    time_t t;
+    time(&t);
+
+    struct tm *currentDateTime = (struct tm *) malloc(sizeof(struct tm));
+    if(currentDateTime == NULL) {
+        fprintf(stderr, "Erro ao alocar memória.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    currentDateTime = localtime(&t);
+    
+    currentDate->day = currentDateTime->tm_mday;
+    currentDate->month = currentDateTime->tm_mon + DIFF_DAY;
+    currentDate->year = currentDateTime->tm_year + YEAR_MIN;
+}
+
+Date *createDate() {
+    Date *currentDate = (Date *) malloc(sizeof(Date));
+
+    if(currentDate == NULL) {
+        fprintf(stderr, "Erro ao alocar memória.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    getCurrentDate(currentDate);
+    return currentDate;
+}
+
+void showDataCustomer(Customer *customer) {
+    if(customer != NULL) {
+        printf("Dados do cliente:\n");
+
+        printf("\nDados pessoais:\n");
+        printf("Nome: %s\n", customer->name);
+        printf("E-mail: %s\n", customer->email);
+        printf("CPF: %s\n", customer->cpf);
+        printf("Telefone: %s\n", customer->phone);
+        
+        printf("\nEndereço:\n");
+        printf("CEP: %s\n", customer->address.cep);
+        printf("Rua: %s\n", customer->address.street);
+        printf("Número: %s\n", customer->address.number);
+        printf("Bairro: %s\n", customer->address.neighborhood);
+        printf("Cidade: %s\n", customer->address.city);
+        printf("Estado: %s\n", customer->address.state);
+
+        printf("\nCadastro:\n");
+        printf("Data: %.2d/%.2d/%.4d\n", customer->dateRegister.day, customer->dateRegister.month, customer->dateRegister.year);
+    } else {
+        fprintf(stderr, "Erro: Cliente não encontrado!\n");
+        exit(EXIT_FAILURE);
+    }
 }
