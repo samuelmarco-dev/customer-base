@@ -46,3 +46,11 @@ Expressões regulares:
 // ^[a-z0-9._]+@[a-z]+\.[a-z]+\.[a-z]{2,}$ //.com.br
 // ^[a-z0-9._]+@[a-z]+\.[a-z]{2,}$ //.com
 *sudo apt-get install libpcre3-dev*
+
+sudo apt-get install libcurl4-openssl-dev libjson-c-dev
+gcc -o main main.c -lcurl -ljson-c
+*/
+
+linux:
+gcc main.c -o main -lcurl -ljson-c
+./main
