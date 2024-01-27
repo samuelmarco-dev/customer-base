@@ -23,6 +23,7 @@
 #define YEAR_MIN 1900
 
 #define API_URL "https://brasilaberto.com/api/v1/zipcode/%s"
+#define FILE_PATH "../data/customers.csv"#define AMOUNT_FIELDS 13
 
 typedef struct {
     char street[MAX_LENGTH];
@@ -85,17 +86,18 @@ void loadCustomersFromFile(Customer *dataBase[], int *count);
 void listAllCustomers(Customer *dataBase[], int count);
 Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf);
 void editCustomer(Customer *customer);
+void searchForCpf(char *cpfInput);
 
 int main() {
     setlocale(LC_ALL, "Portuguese");
     Customer *dataBase[MAX_CUSTOMERS];
     int count = 0;
+    int choice;
 
     loadCustomersFromFile(dataBase, &count);
 
-    int choice;
     do {
-        printf("Sistema de Cadastro de Clientes (até 5 clientes por vez)\n");
+        printf("Bem-vindo ao Sistema de Cadastro de Clientes\n");
         printf("\nMenu:\n");
         printf("1. Adicionar Cliente\n");
         printf("2. Listar Todos os Clientes\n");
@@ -110,37 +112,27 @@ int main() {
             case 1:
                 dataBase[count++] = createCustomer();
                 printf("Cliente cadastrado com sucesso!\n");
-                showDataCustomer(dataBase[count - 1]);
                 break;
             case 2:
                 listAllCustomers(dataBase, count);
                 break;
             case 3:
-                printf("Digite o CPF para buscar: ");
-                char cpfToSearch[LENGTH_CPF];
-                scanf("%s", cpfToSearch);
-                getchar();
+                char cpfInput[LENGTH_CPF];
+                searchForCpf(cpfInput);
                 
-                Customer *foundCustomer = searchCustomerByCPF(dataBase, count, cpfToSearch);
-                if (foundCustomer != NULL) {
-                    showDataCustomer(foundCustomer);
-                } else {
-                    printf("Cliente não encontrado.\n");
-                }
+                Customer *foundCustomer = searchCustomerByCPF(dataBase, count, cpfInput);
+                if(foundCustomer != NULL) { showDataCustomer(foundCustomer); } 
+                else { printf("Cliente não encontrado.\n"); }
                 break;
             case 4:
-                printf("Digite o CPF do cliente a ser editado: ");
-                char cpfToEdit[LENGTH_CPF];
-                scanf("%s", cpfToEdit);
-                getchar();
+                char cpfInput[LENGTH_CPF];
+                searchForCpf(cpfInput);
                 
-                Customer *customerToEdit = searchCustomerByCPF(dataBase, count, cpfToEdit);
-                if (customerToEdit != NULL) {
+                Customer *customerToEdit = searchCustomerByCPF(dataBase, count, cpfInput);
+                if(customerToEdit != NULL) {
                     editCustomer(customerToEdit);
                     printf("Cliente editado com sucesso!\n");
-                } else {
-                    printf("Cliente não encontrado.\n");
-                }
+                } else { printf("Cliente não encontrado.\n"); }
                 break;
             case 5:
                 saveCustomersToFile(dataBase, count);
@@ -150,7 +142,6 @@ int main() {
         }
     } while (choice != 5);
 
-    // Libere a memória alocada antes de sair
     for (int i = 0; i < count; i++) {
         free(dataBase[i]);
     }
@@ -214,6 +205,26 @@ void setCpf(Customer *customer) {
     char *cpfFormatted = formatCpf(cpf);
     strcpy(customer->cpf, cpfFormatted);
     free(cpfFormatted);
+}
+''
+void searchForCpf(char *cpfInput) {
+    char cpfSearch[LENGTH_INPUT];
+
+    do {
+        printf("Digite o CPF de busca: ");
+        scanf("%[^\n]", cpfSearch);
+        getchar();
+
+        if(!isValidCpfAndPhone(cpfSearch))
+            printf("O CPF deve ter %d caracteres.\n", LENGTH_INPUT);
+        else if(!isNumbers(cpfSearch))
+            printf("O CPF deve conter apenas números.\n");
+        else break;
+    } while(!(isValidCpfAndPhone(cpfSearch) && isNumbers(cpfSearch)));
+
+    char *cpf = formatCpf(cpfSearch);
+    strcpy(cpfInput, cpfFormatted);
+    free(cpfFormatted);        
 }
 
 void setPhone(Customer *customer) {
@@ -506,7 +517,7 @@ Date *createDate() {
 
 void showDataCustomer(Customer *customer) {
     if(customer != NULL) {
-        printf("Dados do cliente:\n");
+        printf("Dados do cliente cadastrado:\n");
 
         printf("\nDados pessoais:\n");
         printf("Nome: %s\n", customer->name);
@@ -531,13 +542,15 @@ void showDataCustomer(Customer *customer) {
 }
 
 void saveCustomersToFile(Customer *dataBase[], int count) {
-    FILE *file = fopen("customers.txt", "w");
-    if (file == NULL) {
+    const char *directoryFile = FILE_PATH;
+    FILE *file = fopen(directoryFile, "w");
+    
+    if(file == NULL) {
         fprintf(stderr, "Erro ao abrir o arquivo para escrita.\n");
         return;
     }
 
-    for (int i = 0; i < count; i++) {
+    for(int i = 0; i < count; i++) {
         fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%d/%d/%d\n",
                 dataBase[i]->name,
                 dataBase[i]->email,
@@ -555,35 +568,60 @@ void saveCustomersToFile(Customer *dataBase[], int count) {
     }
 
     fclose(file);
+    printf("Clientes salvos com sucesso!\n");
 }
 
 void loadCustomersFromFile(Customer *dataBase[], int *count) {
-    FILE *file = fopen("customers.txt", "r");
-    if (file == NULL) {
+    const char *directoryFile = FILE_PATH;
+    FILE *file = fopen(directoryFile, "r");
+    
+    if(file == NULL) {
         fprintf(stderr, "Arquivo de clientes não encontrado ou erro ao abrir para leitura.\n");
         return;
     }
 
-    while (!feof(file)) {
-        Customer *customer = createCustomer();
-        if (fscanf(file, "%49[^,],%49[^,],%14[^,],%14[^,],%9[^,],%49[^,],%4[^,],%49[^,],%49[^,],%d/%d/%d\n",
-                   customer->name,
-                   customer->email,
-                   customer->cpf,
-                   customer->phone,
-                   customer->address.cep,
-                   customer->address.street,
-                   customer->address.number,
-                   customer->address.neighborhood,
-                   customer->address.city,
-                   customer->address.state,
-                   &customer->dateRegister.day,
-                   &customer->dateRegister.month,
-                   &customer->dateRegister.year) == 13) {
+    *count = 0;
+    int capacity = MAX_CUSTOMERS;
+    dataBase = realloc(dataBase, capacity * sizeof(Customer *));
+
+    if(dataBase == NULL) {
+        fprintf(stderr, "Erro ao alocar memória.\n");
+        fclose(file);
+        exit(EXIT_FAILURE);
+    }
+
+    while (1) {
+        if(*count >= capacity) {
+            capacity += MAX_CUSTOMERS;
+            dataBase = realloc(dataBase, capacity * sizeof(Customer *));
+            
+            if(dataBase == NULL) {
+                fprintf(stderr, "Erro ao alocar memória.\n");
+                fclose(file);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        Customer *customer = (Customer *) malloc(sizeof(Customer));
+        if(customer == NULL) {
+            fprintf(stderr, "Erro ao alocar memória.\n");
+            fclose(file);
+            exit(EXIT_FAILURE);
+        }
+
+        if(fscanf(
+            file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%d/%d/%d\n",
+            customer->name, customer->email, customer->cpf, customer->phone,
+            customer->address.cep, customer->address.street, customer->address.number,
+            customer->address.neighborhood, customer->address.city, customer->address.state,
+            &customer->dateRegister.day, &customer->dateRegister.month, &customer->dateRegister.year
+            ) == AMOUNT_FIELDS) {
+            
             dataBase[*count] = customer;
             (*count)++;
         } else {
             free(customer);
+            break;
         }
     }
 
@@ -604,11 +642,10 @@ void listAllCustomers(Customer *dataBase[], int count) {
 }
 
 Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf) {
-    for (int i = 0; i < count; i++) {
-        if (strcmp(dataBase[i]->cpf, cpf) == 0) {
-            return dataBase[i];
-        }
+    for(int i = 0; i < count; i++) {
+        if(strcmp(dataBase[i]->cpf, cpf) == 0) return dataBase[i];
     }
+    
     return NULL;
 }
 
@@ -623,9 +660,9 @@ void editCustomer(Customer *customer) {
 
     int choice;
     scanf("%d", &choice);
-    getchar();  // Limpar o buffer do teclado
+    getchar();
 
-    switch (choice) {
+    switch(choice) {
         case 1:
             setName(customer);
             break;
@@ -646,9 +683,9 @@ void editCustomer(Customer *customer) {
             
             int addressChoice;
             scanf("%d", &addressChoice);
-            getchar();  // Limpar o buffer do teclado
+            getchar();
 
-            switch (addressChoice) {
+            switch(addressChoice) {
                 case 1:
                     setCep(&customer->address);
                     break;
