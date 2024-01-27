@@ -206,26 +206,6 @@ void setCpf(Customer *customer) {
     strcpy(customer->cpf, cpfFormatted);
     free(cpfFormatted);
 }
-''
-void searchForCpf(char *cpfInput) {
-    char cpfSearch[LENGTH_INPUT];
-
-    do {
-        printf("Digite o CPF de busca: ");
-        scanf("%[^\n]", cpfSearch);
-        getchar();
-
-        if(!isValidCpfAndPhone(cpfSearch))
-            printf("O CPF deve ter %d caracteres.\n", LENGTH_INPUT);
-        else if(!isNumbers(cpfSearch))
-            printf("O CPF deve conter apenas números.\n");
-        else break;
-    } while(!(isValidCpfAndPhone(cpfSearch) && isNumbers(cpfSearch)));
-
-    char *cpf = formatCpf(cpfSearch);
-    strcpy(cpfInput, cpfFormatted);
-    free(cpfFormatted);        
-}
 
 void setPhone(Customer *customer) {
     char phone[LENGTH_INPUT];
@@ -699,4 +679,24 @@ void editCustomer(Customer *customer) {
         default:
             printf("Opção inválida.\n");
     }
+}
+
+void searchForCpf(char *cpfInput) {
+    char cpfSearch[LENGTH_INPUT];
+
+    do {
+        printf("Digite o CPF de busca: ");
+        scanf("%[^\n]", cpfSearch);
+        getchar();
+
+        if(!isValidCpfAndPhone(cpfSearch))
+            printf("O CPF deve ter %d caracteres.\n", LENGTH_INPUT);
+        else if(!isNumbers(cpfSearch))
+            printf("O CPF deve conter apenas números.\n");
+        else break;
+    } while(!(isValidCpfAndPhone(cpfSearch) && isNumbers(cpfSearch)));
+
+    char *cpf = formatCpf(cpfSearch);
+    strcpy(cpfInput, cpfFormatted);
+    free(cpfFormatted);        
 }

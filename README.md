@@ -25,8 +25,8 @@ The goal is to practice data manipulation and the use of control structures.
 
 ```bash
 sudo apt install gcc
-sudo apt-get install libcurl4-openssl-dev libjson-c-dev
-sudo apt install 
+sudo apt-get install libcurl4-openssl-dev
+sudo apt install libjson-c-dev
 git clone
 cd customer-base
 cd src
