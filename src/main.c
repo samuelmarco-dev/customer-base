@@ -23,7 +23,8 @@
 #define YEAR_MIN 1900
 
 #define API_URL "https://brasilaberto.com/api/v1/zipcode/%s"
-#define FILE_PATH "../data/customers.csv"#define AMOUNT_FIELDS 13
+#define FILE_PATH "../data/customers.csv"
+#define AMOUNT_FIELDS 13
 
 typedef struct {
     char street[MAX_LENGTH];
@@ -81,12 +82,12 @@ int isNumbers(const char *input);
 Date *createDate();
 void getCurrentDate(Date *currentDate);
 
-void saveCustomersToFile(Customer *dataBase[], int count);
-void loadCustomersFromFile(Customer *dataBase[], int *count);
+// void saveCustomersToFile(Customer *dataBase[], int count);
+// void loadCustomersFromFile(Customer *dataBase[], int *count);
 void listAllCustomers(Customer *dataBase[], int count);
-Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf);
-void editCustomer(Customer *customer);
-void searchForCpf(char *cpfInput);
+// Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf);
+// void editCustomer(Customer *customer);
+// void searchForCpf(char *cpfInput);
 
 int main() {
     setlocale(LC_ALL, "Portuguese");
@@ -94,7 +95,7 @@ int main() {
     int count = 0;
     int choice;
 
-    loadCustomersFromFile(dataBase, &count);
+    // loadCustomersFromFile(dataBase, &count);
 
     do {
         printf("Bem-vindo ao Sistema de Cadastro de Clientes\n");
@@ -108,6 +109,9 @@ int main() {
         scanf("%d", &choice);
         getchar(); 
 
+        // char cpfInput[LENGTH_CPF];
+        // searchForCpf(cpfInput);
+
         switch (choice) {
             case 1:
                 dataBase[count++] = createCustomer();
@@ -117,25 +121,24 @@ int main() {
                 listAllCustomers(dataBase, count);
                 break;
             case 3:
-                char cpfInput[LENGTH_CPF];
-                searchForCpf(cpfInput);
-                
-                Customer *foundCustomer = searchCustomerByCPF(dataBase, count, cpfInput);
-                if(foundCustomer != NULL) { showDataCustomer(foundCustomer); } 
-                else { printf("Cliente não encontrado.\n"); }
+                printf("teste\n");
+                // Customer *foundCustomer = searchCustomerByCPF(dataBase, count, cpfInput);
+
+                // if(foundCustomer != NULL) { showDataCustomer(foundCustomer); } 
+                // else { printf("Cliente não encontrado.\n"); }
                 break;
             case 4:
-                char cpfInput[LENGTH_CPF];
-                searchForCpf(cpfInput);
-                
-                Customer *customerToEdit = searchCustomerByCPF(dataBase, count, cpfInput);
-                if(customerToEdit != NULL) {
-                    editCustomer(customerToEdit);
-                    printf("Cliente editado com sucesso!\n");
-                } else { printf("Cliente não encontrado.\n"); }
+                printf("teste\n");
+                // Customer *customerToEdit = searchCustomerByCPF(dataBase, count, cpfInput);
+               
+                // if(customerToEdit != NULL) {
+                //     editCustomer(customerToEdit);
+                //     printf("Cliente editado com sucesso!\n");
+                // } else { printf("Cliente não encontrado.\n"); }
                 break;
             case 5:
-                saveCustomersToFile(dataBase, count);
+                printf("teste\n");
+                // saveCustomersToFile(dataBase, count);
                 break;
             default:
                 printf("Opção inválida. Tente novamente.\n");
@@ -284,7 +287,7 @@ int isNumbers(const char *input) {
 }
 
 Customer *createCustomer() {
-    Customer *customer = (Customer *) calloc(1, sizeof(Customer));
+    Customer *customer = (Customer *) malloc(sizeof(Customer));
 
     if(customer == NULL) {
         fprintf(stderr, "Erro: Alocação de memória!\n");
@@ -478,9 +481,9 @@ void getCurrentDate(Date *currentDate) {
 
     currentDateTime = localtime(&t);
     
-    currentDate->day = currentDateTime->tm_mday;
-    currentDate->month = currentDateTime->tm_mon + DIFF_DAY;
-    currentDate->year = currentDateTime->tm_year + YEAR_MIN;
+    currentDate->day = (int) currentDateTime->tm_mday;
+    currentDate->month = (int) currentDateTime->tm_mon + DIFF_DAY;
+    currentDate->year = (int) currentDateTime->tm_year + YEAR_MIN;
 }
 
 Date *createDate() {
@@ -521,92 +524,124 @@ void showDataCustomer(Customer *customer) {
     }
 }
 
-void saveCustomersToFile(Customer *dataBase[], int count) {
-    const char *directoryFile = FILE_PATH;
-    FILE *file = fopen(directoryFile, "w");
+// void saveCustomersToFile(Customer *dataBase[], int count) {
+//     const char *directoryFile = FILE_PATH;
+//     FILE *file = fopen(directoryFile, "w");
     
-    if(file == NULL) {
-        fprintf(stderr, "Erro ao abrir o arquivo para escrita.\n");
-        return;
-    }
+//     if(file == NULL) {
+//         fprintf(stderr, "Erro ao abrir o arquivo para escrita.\n");
+//         return;
+//     }
 
-    for(int i = 0; i < count; i++) {
-        fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%d/%d/%d\n",
-                dataBase[i]->name,
-                dataBase[i]->email,
-                dataBase[i]->cpf,
-                dataBase[i]->phone,
-                dataBase[i]->address.cep,
-                dataBase[i]->address.street,
-                dataBase[i]->address.number,
-                dataBase[i]->address.neighborhood,
-                dataBase[i]->address.city,
-                dataBase[i]->address.state,
-                dataBase[i]->dateRegister.day,
-                dataBase[i]->dateRegister.month,
-                dataBase[i]->dateRegister.year);
-    }
+//     for(int i = 0; i < count; i++) {
+//         fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%d,%d",
+//                 dataBase[i]->name,
+//                 dataBase[i]->email,
+//                 dataBase[i]->cpf,
+//                 dataBase[i]->phone,
+//                 dataBase[i]->address.cep,
+//                 dataBase[i]->address.street,
+//                 dataBase[i]->address.number,
+//                 dataBase[i]->address.neighborhood,
+//                 dataBase[i]->address.city,
+//                 dataBase[i]->address.state,
+//                 dataBase[i]->dateRegister.day,
+//                 dataBase[i]->dateRegister.month,
+//                 dataBase[i]->dateRegister.year
+//             );
+//         fprintf(file, "\n");
+//     }
 
-    fclose(file);
-    printf("Clientes salvos com sucesso!\n");
-}
+//     fclose(file);
+//     printf("Clientes salvos com sucesso!\n");
+// }
 
-void loadCustomersFromFile(Customer *dataBase[], int *count) {
-    const char *directoryFile = FILE_PATH;
-    FILE *file = fopen(directoryFile, "r");
+// void loadCustomersFromFile(Customer *dataBase[], int *count) {
+//     const char *directoryFile = FILE_PATH;
+//     FILE *file = fopen(directoryFile, "r");
     
-    if(file == NULL) {
-        fprintf(stderr, "Arquivo de clientes não encontrado ou erro ao abrir para leitura.\n");
-        return;
-    }
+//     if(file == NULL) {
+//         fprintf(stderr, "Arquivo de clientes não encontrado ou erro ao abrir para leitura.\n");
+//         return;
+//     }
 
-    *count = 0;
-    int capacity = MAX_CUSTOMERS;
-    dataBase = realloc(dataBase, capacity * sizeof(Customer *));
+//     *count = 0;
+//     int capacity = MAX_CUSTOMERS;
+//     dataBase = realloc(dataBase, capacity * sizeof(Customer *));
 
-    if(dataBase == NULL) {
-        fprintf(stderr, "Erro ao alocar memória.\n");
-        fclose(file);
-        exit(EXIT_FAILURE);
-    }
+//     if(dataBase == NULL) {
+//         fprintf(stderr, "Erro ao alocar memória.\n");
+//         fclose(file);
+//         exit(EXIT_FAILURE);
+//     }
 
-    while (1) {
-        if(*count >= capacity) {
-            capacity += MAX_CUSTOMERS;
-            dataBase = realloc(dataBase, capacity * sizeof(Customer *));
+//     /*while (1) {
+//         if(*count >= capacity) {
+//             capacity += MAX_CUSTOMERS;
+//             dataBase = realloc(dataBase, capacity * sizeof(Customer *));
             
-            if(dataBase == NULL) {
-                fprintf(stderr, "Erro ao alocar memória.\n");
-                fclose(file);
-                exit(EXIT_FAILURE);
-            }
-        }
+//             if(dataBase == NULL) {
+//                 fprintf(stderr, "Erro ao alocar memória.\n");
+//                 fclose(file);
+//                 exit(EXIT_FAILURE);
+//             }
+//         }
 
-        Customer *customer = (Customer *) malloc(sizeof(Customer));
-        if(customer == NULL) {
-            fprintf(stderr, "Erro ao alocar memória.\n");
-            fclose(file);
-            exit(EXIT_FAILURE);
-        }
+//         Customer *customer = (Customer *) malloc(sizeof(Customer));
+//         if(customer == NULL) {
+//             fprintf(stderr, "Erro ao alocar memória.\n");
+//             fclose(file);
+//             exit(EXIT_FAILURE);
+//         }
 
-        if(fscanf(
-            file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%d/%d/%d\n",
-            customer->name, customer->email, customer->cpf, customer->phone,
-            customer->address.cep, customer->address.street, customer->address.number,
-            customer->address.neighborhood, customer->address.city, customer->address.state,
-            &customer->dateRegister.day, &customer->dateRegister.month, &customer->dateRegister.year
-            ) == AMOUNT_FIELDS) {
+//         //"%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]\n"
+
+//         TODO: // Corrigir a leitura do arquivo -> "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%d,%d\n"
+
+//         if(fscanf(
+//             file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%d,%d,%d\n",
+//             customer->name, customer->email, customer->cpf, customer->phone,
+//             customer->address.cep, customer->address.street, customer->address.number,
+//             customer->address.neighborhood, customer->address.city, customer->address.state,
+//             &customer->dateRegister.day, &customer->dateRegister.month, &customer->dateRegister.year
+//             ) == AMOUNT_FIELDS) {
             
-            dataBase[*count] = customer;
-            (*count)++;
-        } else {
-            free(customer);
-            break;
-        }
-    }
+//             dataBase[*count] = customer;
+//             (*count)++;
+//         } else {
+//             free(customer);
+//             break;
+//         }
+//     }*/
 
-    fclose(file);
-}
+//     while (*count < capacity && fscanf(
+//             file, "%49[^,],%49[^,],%14[^,],%15[^,],%9[^,],%49[^,],%49[^,],%49[^,],%49[^,],%49[^,],%d,%d,%d\n",
+//             dataBase[*count]->name,
+//             dataBase[*count]->email,
+//             dataBase[*count]->cpf,
+//             dataBase[*count]->phone,
+//             dataBase[*count]->address.cep,
+//             dataBase[*count]->address.street,
+//             dataBase[*count]->address.number,
+//             dataBase[*count]->address.neighborhood,
+//             dataBase[*count]->address.city,
+//             dataBase[*count]->address.state,
+//             &dataBase[*count]->dateRegister.day,
+//             &dataBase[*count]->dateRegister.month,
+//             &dataBase[*count]->dateRegister.year
+//         ) == AMOUNT_FIELDS) {
+//         (*count)++;
+//         dataBase[*count] = (Customer *)malloc(sizeof(Customer));
+
+//         if (dataBase[*count] == NULL) {
+//             fprintf(stderr, "Erro ao alocar memória para o próximo cliente.\n");
+//             fclose(file);
+//             exit(EXIT_FAILURE);
+//         }
+//     }
+
+//     fclose(file);
+// }
 
 void listAllCustomers(Customer *dataBase[], int count) {
     if (count == 0) {
@@ -621,82 +656,82 @@ void listAllCustomers(Customer *dataBase[], int count) {
     }
 }
 
-Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf) {
-    for(int i = 0; i < count; i++) {
-        if(strcmp(dataBase[i]->cpf, cpf) == 0) return dataBase[i];
-    }
+// Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf) {
+//     for(int i = 0; i < count; i++) {
+//         if(strcmp(dataBase[i]->cpf, cpf) == 0) return dataBase[i];
+//     }
     
-    return NULL;
-}
+//     return NULL;
+// }
 
-void editCustomer(Customer *customer) {
-    printf("Editar Cliente:\n");
-    printf("1. Nome\n");
-    printf("2. E-mail\n");
-    printf("3. CPF\n");
-    printf("4. Telefone\n");
-    printf("5. Endereço\n");
-    printf("Escolha uma opção: ");
+// void editCustomer(Customer *customer) {
+//     printf("Editar Cliente:\n");
+//     printf("1. Nome\n");
+//     printf("2. E-mail\n");
+//     printf("3. CPF\n");
+//     printf("4. Telefone\n");
+//     printf("5. Endereço\n");
+//     printf("Escolha uma opção: ");
 
-    int choice;
-    scanf("%d", &choice);
-    getchar();
+//     int choice;
+//     scanf("%d", &choice);
+//     getchar();
 
-    switch(choice) {
-        case 1:
-            setName(customer);
-            break;
-        case 2:
-            setEmail(customer);
-            break;
-        case 3:
-            setCpf(customer);
-            break;
-        case 4:
-            setPhone(customer);
-            break;
-        case 5:
-            printf("Editar Endereço:\n");
-            printf("1. CEP\n");
-            printf("2. Número\n");
-            printf("Escolha uma opção: ");
+//     switch(choice) {
+//         case 1:
+//             setName(customer);
+//             break;
+//         case 2:
+//             setEmail(customer);
+//             break;
+//         case 3:
+//             setCpf(customer);
+//             break;
+//         case 4:
+//             setPhone(customer);
+//             break;
+//         case 5:
+//             printf("Editar Endereço:\n");
+//             printf("1. CEP\n");
+//             printf("2. Número\n");
+//             printf("Escolha uma opção: ");
             
-            int addressChoice;
-            scanf("%d", &addressChoice);
-            getchar();
+//             int addressChoice;
+//             scanf("%d", &addressChoice);
+//             getchar();
 
-            switch(addressChoice) {
-                case 1:
-                    setCep(&customer->address);
-                    break;
-                case 2:
-                    setNumber(&customer->address);
-                    break;
-                default:
-                    printf("Opção inválida.\n");
-            }
-            break;
-        default:
-            printf("Opção inválida.\n");
-    }
-}
+//             switch(addressChoice) {
+//                 case 1:
+//                     setCep(&customer->address);
+//                     break;
+//                 case 2:
+//                     setNumber(&customer->address);
+//                     break;
+//                 default:
+//                     printf("Opção inválida.\n");
+//             }
+//             break;
+//         default:
+//             printf("Opção inválida.\n");
+//     }
+// }
 
-void searchForCpf(char *cpfInput) {
-    char cpfSearch[LENGTH_INPUT];
+// void searchForCpf(char *cpfInput) {
+//     char cpfSearch[LENGTH_INPUT];
 
-    do {
-        printf("Digite o CPF de busca: ");
-        scanf("%[^\n]", cpfSearch);
-        getchar();
+//     do {
+//         printf("Digite o CPF de busca: ");
+//         scanf("%[^\n]", cpfSearch);
+//         getchar();
 
-        if(!isValidCpfAndPhone(cpfSearch))
-            printf("O CPF deve ter %d caracteres.\n", LENGTH_INPUT);
-        else if(!isNumbers(cpfSearch))
-            printf("O CPF deve conter apenas números.\n");
-        else break;
-    } while(!(isValidCpfAndPhone(cpfSearch) && isNumbers(cpfSearch)));
+//         if(!isValidCpfAndPhone(cpfSearch))
+//             printf("O CPF deve ter %d caracteres.\n", LENGTH_INPUT);
+//         else if(!isNumbers(cpfSearch))
+//             printf("O CPF deve conter apenas números.\n");
+//         else break;
+//     } while(!(isValidCpfAndPhone(cpfSearch) && isNumbers(cpfSearch)));
 
-    char *cpf = formatCpf(cpfSearch);
-    strcpy(cpfInput, cpfFormatted);
-    free(cpfFormatted);        
-}
+//     char *cpf = formatCpf(cpfSearch);
+//     strcpy(cpfInput, cpf);
+//     free(cpf);        
+// }
