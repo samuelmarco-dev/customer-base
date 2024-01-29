@@ -33,3 +33,8 @@ cd src
 gcc -o main main.c -lcurl -ljson-c
 ./main
 ```
+
+## Upcoming features
+1. Verification of existing user according to email and CPF input
+2. Reading the data in the .txt file and dynamically assigning the memory allocation from the customers array [ ]
+3. Option to assign the customer's address manually, eliminating the request via API
