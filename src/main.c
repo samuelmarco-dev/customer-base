@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include <curl/curl.h>
 #include <json-c/json.h>
-#include <memory.h>
-#include <malloc.h>
 #include <locale.h>
 #include <time.h>
 
@@ -15,10 +13,10 @@
 #define MIN_LENGTH 5
 #define LENGTH_CEP 8
 #define MAX_CEP 10
-#define MAX_CUSTOMERS 10
 #define LENGTH_INPUT 11
 #define LENGTH_CPF 15
 #define LENGTH_PHONE 16  
+#define MAX_CUSTOMERS 20
 #define MAX_LENGTH 50
 #define YEAR_MIN 1900
 
@@ -83,7 +81,6 @@ Date *createDate();
 void getCurrentDate(Date *currentDate);
 
 void saveCustomersToFile(Customer *dataBase[], int count);
-void loadCustomersFromFile(Customer *dataBase[], int *count);
 void listAllCustomers(Customer *dataBase[], int count);
 Customer *searchCustomerByCPF(Customer *dataBase[], int count, const char *cpf);
 void editCustomer(Customer *customer);
@@ -96,8 +93,6 @@ int main() {
     int count = 0;
     int choice;
     char cpfInput[LENGTH_CPF];
-
-    loadCustomersFromFile(dataBase, &count);
 
     do {
         printf("Bem-vindo ao Sistema de Cadastro de Clientes\n");
@@ -165,9 +160,9 @@ void setName(Customer *customer) {
         
         if(!isValidLengthInput(name))
             printf("O nome deve ter entre %d e %d caracteres.\n", MIN_LENGTH, MAX_LENGTH);
-         else if(!isValidRegex(name, patternName)) 
+        else if(!isValidRegex(name, patternName)) 
             printf("O nome não confere com o padrão da expressão regular, tente novamente.\n");
-         else break;
+        else break;
     } while(!(isValidLengthInput(name) && isValidRegex(name, patternName)));
 
     strcpy(customer->name, name);
@@ -528,7 +523,7 @@ void showDataCustomer(Customer *customer) {
 
 void saveCustomersToFile(Customer *dataBase[], int count) {
     const char *directoryFile = FILE_PATH;
-    FILE *file = fopen(directoryFile, "w");
+    FILE *file = fopen(directoryFile, "a");
     
     if(file == NULL) {
         fprintf(stderr, "Erro ao abrir o arquivo para escrita.\n");
@@ -561,71 +556,6 @@ void saveCustomersToFile(Customer *dataBase[], int count) {
 
     fclose(file);
     printf("Clientes salvos com sucesso no diretório: %s!\n", directoryFile);
-}
-
-void loadCustomersFromFile(Customer *dataBase[], int *count) {
-    const char *directoryFile = FILE_PATH;
-    FILE *file = fopen(directoryFile, "r");
-    int newCapacity = 0;
-    
-    if(file == NULL) {
-        fprintf(stderr, "Arquivo de clientes não encontrado ou erro ao abrir para leitura.\n");
-        return;
-    }
-
-    *count = 0;
-    dataBase = realloc(dataBase, MAX_CUSTOMERS * sizeof(Customer *));
-
-    if(dataBase == NULL) {
-        fprintf(stderr, "Erro ao alocar memória.\n");
-        fclose(file);
-        exit(EXIT_FAILURE);
-    }
-
-    while(
-        fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%d,%d,%d\n",
-        dataBase[*count]->name,
-        dataBase[*count]->email,
-        dataBase[*count]->cpf,
-        dataBase[*count]->phone,
-        dataBase[*count]->address.cep,
-        dataBase[*count]->address.street,
-        dataBase[*count]->address.number,
-        dataBase[*count]->address.neighborhood,
-        dataBase[*count]->address.city,
-        dataBase[*count]->address.state,
-        &dataBase[*count]->dateRegister.day,
-        &dataBase[*count]->dateRegister.month,
-        &dataBase[*count]->dateRegister.year) == AMOUNT_FIELDS) {
-        
-        if(*count >= MAX_CUSTOMERS) {
-            newCapacity += MAX_CUSTOMERS;
-            dataBase = realloc(dataBase, newCapacity * sizeof(Customer *));
-
-            if(dataBase == NULL) {
-                fprintf(stderr, "Erro ao alocar memória.\n");
-                fclose(file);
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        dataBase[*count] = (Customer *) malloc(sizeof(Customer));
-        if(dataBase[*count] == NULL) {
-            fprintf(stderr, "Erro ao alocar memória para o próximo cliente.\n");
-            fclose(file);
-            exit(EXIT_FAILURE);
-        }
-
-        if(ferror(file)) {
-            fprintf(stderr, "Erro ao ler os dados do cliente.\n");
-            fclose(file);
-            exit(EXIT_FAILURE);
-        }
-        (*count)++;
-    }
-
-    fclose(file);
-    printf("Clientes carregados com sucesso do diretório: %s!\n", directoryFile);
 }
 
 void listAllCustomers(Customer *dataBase[], int count) {
