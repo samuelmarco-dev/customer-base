@@ -16,7 +16,7 @@
 #define LENGTH_INPUT 11
 #define LENGTH_CPF 15
 #define LENGTH_PHONE 16  
-#define MAX_CUSTOMERS 20
+#define MAX_CUSTOMERS 25
 #define MAX_LENGTH 50
 #define YEAR_MIN 1900
 
@@ -88,14 +88,26 @@ void searchForCpf(char *cpfInput);
 
 int main() {
     setlocale(LC_ALL, "Portuguese");
-    Customer *dataBase[MAX_CUSTOMERS];
     
+    int amount = 0;
     int count = 0;
     int choice;
     char cpfInput[LENGTH_CPF];
 
+    Customer *dataBase[amount];
+
     do {
         printf("Bem-vindo ao Sistema de Cadastro de Clientes\n");
+
+        while (amount > MAX_LENGTH || !amount) {
+            printf("\nGostaria de salvar quantos clientes? ");
+            scanf("%d", &amount);
+            getchar();
+            
+            if(amount > MAX_LENGTH || !amount) printf("O número de clientes deve ser entre 1 e %d.\n", MAX_CUSTOMERS);
+            else break;
+        }
+
         printf("\nMenu:\n");
         printf("1. Adicionar Cliente\n");
         printf("2. Listar Todos os Clientes\n");
@@ -106,11 +118,10 @@ int main() {
         scanf("%d", &choice);
         getchar(); 
 
-
         switch (choice) {
             case 1:
                 dataBase[count++] = createCustomer();
-                printf("Cliente cadastrado com sucesso!\n");
+                printf("Cliente cadastrado com sucesso!\n\n");
                 break;
             case 2:
                 listAllCustomers(dataBase, count);
@@ -122,7 +133,7 @@ int main() {
                 if(foundCustomer != NULL) 
                     showDataCustomer(foundCustomer);
                 else 
-                    printf("Cliente não encontrado.\n");
+                    printf("Cliente não encontrado.\n\n");
                 break;
             case 4:
                 searchForCpf(cpfInput);
@@ -130,15 +141,15 @@ int main() {
                
                 if(customerToEdit != NULL) {
                     editCustomer(customerToEdit);
-                    printf("Cliente editado com sucesso!\n");
+                    printf("Cliente editado com sucesso!\n\n");
                 } else 
-                    printf("Cliente não encontrado.\n");
+                    printf("Cliente não encontrado.\n\n");
                 break;
             case 5:
                 saveCustomersToFile(dataBase, count);
                 break;
             default:
-                printf("Opção inválida. Tente novamente.\n");
+                printf("Opção inválida. Tente novamente.\n\n");
         }
     } while (choice != 5);
 
@@ -260,7 +271,6 @@ int isValidRegex(const char *input, const char *pattern) {
         exit(EXIT_FAILURE);
     }
 
-    fprintf(stderr, "Expressão regular compilada com sucesso\n");
     value = regexec(&regex, input, (size_t) 0, (regmatch_t *) NULL, 0);
     regfree(&regex);
 
@@ -560,7 +570,7 @@ void saveCustomersToFile(Customer *dataBase[], int count) {
 
 void listAllCustomers(Customer *dataBase[], int count) {
     if (count == 0) {
-        printf("Nenhum cliente cadastrado.\n");
+        printf("Nenhum cliente cadastrado.\n\n");
         return;
     }
 
